@@ -1,14 +1,14 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/db.js";
 
-// GET ALL EVENTS (Termasuk data Kategori & Pembicara)
+// GET ALL EVENTS
 export const getAllEvents = async (req: Request, res: Response) => {
   try {
     const events = await prisma.event.findMany({
       orderBy: { createdAt: "desc" },
       include: { 
-        category: true,   // Ambil data kategori
-        pembicara: true,  // ← Ambil data pembicara sekalian
+        category: true, 
+        pembicara: true,
       }, 
     });
     res.json(events);
@@ -20,15 +20,16 @@ export const getAllEvents = async (req: Request, res: Response) => {
 // CREATE EVENT
 export const createEvent = async (req: Request, res: Response) => {
   try {
-    const { name, tanggal, lokasi, categoryId, pembicaraId, description } = req.body;
+    // Sesuaikan variabel dengan yang dikirim frontend: dateEvent, location
+    const { name, dateEvent, location, categoryId, pembicaraId, description } = req.body;
 
     const newEvent = await prisma.event.create({
       data: {
         name,
-        dateEvent: new Date(tanggal),
-        location: lokasi,
+        dateEvent: new Date(dateEvent),
+        location: location,
         categoryId: Number(categoryId),
-        pembicaraId: Number(pembicaraId), // ← Hubungkan data pembicara di sini
+        pembicaraId: Number(pembicaraId),
         description,
       },
     });
@@ -47,7 +48,7 @@ export const getEventById = async (req: Request, res: Response) => {
       where: { id },
       include: { 
         category: true,
-        pembicara: true, // ← Tampilkan data pembicara di detail
+        pembicara: true,
       },
     });
     if (!event) return res.status(404).json({ message: "Event tidak ditemukan" });
@@ -61,22 +62,24 @@ export const getEventById = async (req: Request, res: Response) => {
 export const updateEventById = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const { name, tanggal, lokasi, categoryId, pembicaraId, description } = req.body;
+    // VARIABEL DISAMAKAN DENGAN FRONTEND
+    const { name, dateEvent, location, categoryId, pembicaraId, description } = req.body;
 
     const updatedEvent = await prisma.event.update({
       where: { id },
       data: {
         name,
-        dateEvent: new Date(tanggal),
-        location: lokasi,
+        dateEvent: new Date(dateEvent),
+        location: location,
         categoryId: Number(categoryId),
-        pembicaraId: Number(pembicaraId), // ← Izinkan update pembicara
+        pembicaraId: Number(pembicaraId),
         description,
       },
     });
 
     res.json(updatedEvent);
   } catch (error) {
+    console.error("Error update:", error);
     res.status(500).json({ message: "Gagal update event", error });
   }
 };
