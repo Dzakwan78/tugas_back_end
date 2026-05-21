@@ -20,7 +20,7 @@ export const getAllEvents = async (req: Request, res: Response) => {
 // CREATE EVENT
 export const createEvent = async (req: Request, res: Response) => {
   try {
-    // Sesuaikan variabel dengan yang dikirim frontend: dateEvent, location
+    // Pastikan nama variabel di sini SAMA PERSIS dengan yang dikirim dari Frontend
     const { name, dateEvent, location, categoryId, pembicaraId, description } = req.body;
 
     const newEvent = await prisma.event.create({
@@ -29,11 +29,11 @@ export const createEvent = async (req: Request, res: Response) => {
         dateEvent: new Date(dateEvent),
         location: location,
         categoryId: Number(categoryId),
-        pembicaraId: Number(pembicaraId),
+        pembicaraId: Number(pembicaraId), // Pastikan ini dikirim dari Frontend
         description,
       },
     });
-
+    
     res.status(201).json(newEvent);
   } catch (error) {
     res.status(500).json({ message: "Gagal menambah event", error });
