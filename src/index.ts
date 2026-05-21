@@ -10,6 +10,7 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
+// Rute utama agar root domain tidak menghasilkan error 404
 app.get('/', (req, res) => {
   res.json({ message: 'Backend Invofest API Server Berjalan Lancar!' });
 });
