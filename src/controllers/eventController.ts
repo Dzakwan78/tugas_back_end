@@ -1,48 +1,93 @@
 import type { Request, Response } from "express";
-import type { Event } from "../types/event.js"; 
+import { prisma } from "../lib/db.js";
 
-let events: Event[] = []; 
-
-export const getAllEvents = (req: Request, res: Response): void => {
+// GET ALL EVENTS (Termasuk data Kategori & Pembicara)
+export const getAllEvents = async (req: Request, res: Response) => {
+  try {
+    const events = await prisma.event.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { 
+        category: true,   // Ambil data kategori
+        pembicara: true,  // ← Ambil data pembicara sekalian
+      }, 
+    });
     res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: "Gagal mengambil data event", error });
+  }
 };
 
-export const createEvent = (req: Request, res: Response): void => {
-    const { name, tanggal, lokasi, category, description, status } = req.body;
-    const newId = events.length > 0 ? (events[events.length - 1]?.id || 0) + 1 : 1;
+// CREATE EVENT
+export const createEvent = async (req: Request, res: Response) => {
+  try {
+    const { name, tanggal, lokasi, categoryId, pembicaraId, description } = req.body;
 
-    const newEvent: Event = {
-        id: newId,
-        name: name || "Event Baru",
-        date: tanggal || new Date().toISOString(),
-        location: lokasi || "Lokasi",
-        category: category || "Umum",
-        description: description || "Deskripsi acara",
-        status: status || "scheduled"
-    };
-    
-    events.push(newEvent);
+    const newEvent = await prisma.event.create({
+      data: {
+        name,
+        dateEvent: new Date(tanggal),
+        location: lokasi,
+        categoryId: Number(categoryId),
+        pembicaraId: Number(pembicaraId), // ← Hubungkan data pembicara di sini
+        description,
+      },
+    });
+
     res.status(201).json(newEvent);
+  } catch (error) {
+    res.status(500).json({ message: "Gagal menambah event", error });
+  }
 };
 
-export const getEventById = (req: Request, res: Response): any => {
+// GET BY ID
+export const getEventById = async (req: Request, res: Response) => {
+  try {
     const id = Number(req.params.id);
-    const event = events.find(e => e.id === id);
-    if (!event) return res.status(404).json({ message: "Not Found" });
-    return res.json(event);
+    const event = await prisma.event.findUnique({
+      where: { id },
+      include: { 
+        category: true,
+        pembicara: true, // ← Tampilkan data pembicara di detail
+      },
+    });
+    if (!event) return res.status(404).json({ message: "Event tidak ditemukan" });
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ message: "Gagal mengambil detail event", error });
+  }
 };
 
-export const updateEventById = (req: Request, res: Response): any => {
+// UPDATE EVENT
+export const updateEventById = async (req: Request, res: Response) => {
+  try {
     const id = Number(req.params.id);
-    const index = events.findIndex(e => e.id === id);
-    if (index === -1) return res.status(404).json({ message: "Not Found" });
+    const { name, tanggal, lokasi, categoryId, pembicaraId, description } = req.body;
 
-    events[index] = { ...events[index], ...req.body };
-    return res.json(events[index]);
+    const updatedEvent = await prisma.event.update({
+      where: { id },
+      data: {
+        name,
+        dateEvent: new Date(tanggal),
+        location: lokasi,
+        categoryId: Number(categoryId),
+        pembicaraId: Number(pembicaraId), // ← Izinkan update pembicara
+        description,
+      },
+    });
+
+    res.json(updatedEvent);
+  } catch (error) {
+    res.status(500).json({ message: "Gagal update event", error });
+  }
 };
 
-export const deleteEventById = (req: Request, res: Response): void => {
+// DELETE EVENT
+export const deleteEventById = async (req: Request, res: Response) => {
+  try {
     const id = Number(req.params.id);
-    events = events.filter(e => e.id !== id);
-    res.json({ message: "Deleted" });
+    await prisma.event.delete({ where: { id } });
+    res.json({ message: "Event berhasil dihapus" });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal menghapus event", error });
+  }
 };

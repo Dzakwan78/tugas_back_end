@@ -1,19 +1,18 @@
-import express from 'express';
-
+import { Router } from "express";
 import {
-    getAllCategories,
-    createCategory,
-    getCategoryById,
-    updateCategoryById,
-    deleteCategoryById
+  getAllCategories,
+  createCategory,
+  getCategoryById,
+  updateCategoryById,
+  deleteCategoryById,
 } from "../controllers/categoryController.js";
 
-const router = express.Router();
+const router = Router();
 
 router.get("/", getAllCategories);
-router.post("/", createCategory);
-router.get("/:id", getCategoryById);
-router.put("/:id", updateCategoryById);
+router.post("/", createCategory);       // ← Untuk handle tambah data
+router.get("/:id", getCategoryById);     // ← Untuk handle ambil detail sebelum edit
+router.put("/:id", updateCategoryById);   // ← Untuk handle update data
 router.delete("/:id", deleteCategoryById);
 
 export default router;
