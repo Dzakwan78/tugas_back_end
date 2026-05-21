@@ -10,20 +10,14 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Rute utama agar root domain tidak menghasilkan error 404
 app.get('/', (req, res) => {
-  res.json({ message: 'Backend Invofest API Server Berjalan Lancar!' });
+  res.send('Hello, World!');
 });
 
 app.use("/events", eventRoutes);
 app.use("/categories", categoryRoutes);
 app.use("/pembicara", pembicaraRoutes);
 
-// Jalankan app.listen HANYA jika dijalankan secara lokal (bukan di produksi Vercel)
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-  });
-}
-
-export default app;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
