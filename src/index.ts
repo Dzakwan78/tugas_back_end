@@ -11,13 +11,18 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('Hello, World!');
+  res.json({ message: 'Backend Invofest API Server Berjalan Lancar!' });
 });
 
 app.use("/events", eventRoutes);
 app.use("/categories", categoryRoutes);
 app.use("/pembicara", pembicaraRoutes);
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+// Jalankan app.listen HANYA jika dijalankan secara lokal (bukan di produksi Vercel)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+  });
+}
+
+export default app;
